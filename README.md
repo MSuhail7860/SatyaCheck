@@ -276,15 +276,3 @@ git push origin feature/your-feature
 ```
 
 ---
-
-## ⚖️ License
-
-[MIT](LICENSE) © 2026 SatyaCheck
-
----
-
-<div align="center">
-
-Built with ❤️ for a more informed India. Powered by [Google Gemini](https://ai.google.dev).
-
-</div>

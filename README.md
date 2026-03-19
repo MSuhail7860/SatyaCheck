@@ -16,7 +16,6 @@ Verify suspicious WhatsApp forwards, SMS scams, URLs, and manipulated images —
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://typescriptlang.org)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-12-ff0080?style=flat-square&logo=framer)](https://framer.com/motion)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
 <br />
 
@@ -276,15 +275,3 @@ git push origin feature/your-feature
 ```
 
 ---
-
-## ⚖️ License
-
-[MIT](LICENSE) © 2026 SatyaCheck
-
----
-
-<div align="center">
-
-Built with ❤️ for a more informed India. Powered by [Google Gemini](https://ai.google.dev).
-
-</div>

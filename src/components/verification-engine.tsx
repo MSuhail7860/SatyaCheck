@@ -45,6 +45,7 @@ export function VerificationEngine() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [clickRing, setClickRing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { addHistoryItem } = useHistory();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -116,7 +117,8 @@ export function VerificationEngine() {
   const handleAnalyze = async () => {
     if (isVerifyDisabled) return;
 
-    // Micro-animation on click
+    // Reset error and trigger micro-animation on click
+    setError(null);
     setClickRing(true);
     setTimeout(() => setClickRing(false), 600);
 
@@ -148,6 +150,10 @@ export function VerificationEngine() {
         body: JSON.stringify(payload),
       });
 
+      if (!response.ok) {
+        throw new Error(`Request failed with status ${response.status}`);
+      }
+
       const data = await response.json();
       if (data && data.trustScore !== undefined) {
         setResult(data);
@@ -159,6 +165,7 @@ export function VerificationEngine() {
       }
     } catch (error) {
       console.error("Analysis failed:", error);
+      setError("Analysis failed. Please check your connection or API key.");
     } finally {
       setLoading(false);
     }
@@ -400,6 +407,14 @@ export function VerificationEngine() {
               </Button>
             </div>
           </div>
+
+          {/* Error message */}
+          {error && (
+            <p className="text-xs text-red-400/80 text-center mt-2 px-4 pb-1 flex items-center justify-center gap-1.5">
+              <CircleAlert className="w-3.5 h-3.5 shrink-0" />
+              {error}
+            </p>
+          )}
         </div>
       </div>
 

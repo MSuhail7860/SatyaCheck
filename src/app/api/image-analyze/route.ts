@@ -1,66 +1,66 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Schema, SchemaType } from "@google/generative-ai";
-import { getGeminiModel } from "@/lib/gemini";
+import { Type } from "@google/genai";
+import { getGeminiClient } from "@/lib/gemini";
 
 // ─── Response Schema ──────────────────────────────────────────────────────────
 
-const responseSchema: Schema = {
-  type: SchemaType.OBJECT,
+const responseSchema = {
+  type: Type.OBJECT,
   properties: {
     trustScore: {
-      type: SchemaType.INTEGER,
+      type: Type.INTEGER,
       description:
         "Authenticity score 0–100. 0 = clearly fake/AI-generated, 100 = highly authentic and unmodified.",
     },
     riskCategory: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Primary category of this threat: one of 'Financial Scam', 'Health Misinformation', 'Political Manipulation', 'Job Fraud', 'Cyber Crime', or 'General'.",
     },
     language: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Detected language of any text present in the image, e.g. English, Hindi, Tamil, Telugu. Use 'None' if no text detected.",
     },
     viralRisk: {
-      type: SchemaType.INTEGER,
+      type: Type.INTEGER,
       description: "Score from 0-100 estimating how likely this image is to spread virally and cause harm at scale.",
     },
     metrics: {
-      type: SchemaType.OBJECT,
+      type: Type.OBJECT,
       properties: {
-        logicalConsistency: { type: SchemaType.INTEGER, description: "Score from 0-100 on visual and logical consistency (fewer artifacts = higher score)." },
-        sourceCredibility: { type: SchemaType.INTEGER, description: "Score from 0-100 on the typical credibility of this type of image source." },
-        factualAccuracy: { type: SchemaType.INTEGER, description: "Score from 0-100 based on verified context of the image." },
-        emotionalManipulation: { type: SchemaType.INTEGER, description: "Score from 0-100 on how manipulative the imagery is (100 = highly manipulative/sensational)." }
+        logicalConsistency: { type: Type.INTEGER, description: "Score from 0-100 on visual and logical consistency (fewer artifacts = higher score)." },
+        sourceCredibility: { type: Type.INTEGER, description: "Score from 0-100 on the typical credibility of this type of image source." },
+        factualAccuracy: { type: Type.INTEGER, description: "Score from 0-100 based on verified context of the image." },
+        emotionalManipulation: { type: Type.INTEGER, description: "Score from 0-100 on how manipulative the imagery is (100 = highly manipulative/sensational)." }
       },
       required: ["logicalConsistency", "sourceCredibility", "factualAccuracy", "emotionalManipulation"],
-      description: "Detailed sub-scores analyzing the image."
+      description: "Detailed sub-scores analyzing the image.",
     },
     techniques: {
-      type: SchemaType.ARRAY,
-      items: { type: SchemaType.STRING },
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
       description:
         "List of manipulation/misinformation flags detected, e.g. 'AI-Generated Face', 'Bad Photoshop', 'Misleading Caption', 'Out-of-Context Image', 'Viral Meme Format'.",
     },
     verdict: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description: "Short 1–2 sentence verdict on the image's authenticity.",
     },
     explanation: {
-      type: SchemaType.STRING,
+      type: Type.STRING,
       description:
         "Detailed explanation referencing visual clues (edge artifacts, lighting inconsistencies, text overlays, metadata signs) or why this image format is commonly misused in Indian social media.",
     },
     sources: {
-      type: SchemaType.ARRAY,
+      type: Type.ARRAY,
       items: {
-        type: SchemaType.OBJECT,
+        type: Type.OBJECT,
         properties: {
           title: {
-            type: SchemaType.STRING,
+            type: Type.STRING,
             description: "Name of the authoritative publisher (e.g. AltNews, BOOM FactCheck, PIB)",
           },
           link: {
-            type: SchemaType.STRING,
+            type: Type.STRING,
             description: "URL to a relevant fact-check or official resource",
           },
         },
@@ -131,11 +131,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // D. Initialise Gemini model
-    const model = getGeminiModel("gemini-2.5-flash");
+    // D. Initialise Gemini client
+    const client = getGeminiClient();
 
     // E. Multimodal Gemini call with structured JSON output
-    const result = await model.generateContent({
+    const result = await client.models.generateContent({
+      model: "gemini-2.5-flash",
       contents: [
         {
           role: "user",
@@ -150,20 +151,20 @@ export async function POST(req: NextRequest) {
           ],
         },
       ],
-      generationConfig: {
+      config: {
         responseMimeType: "application/json",
         responseSchema,
       },
     });
 
-    const rawText = result.response.text();
+    const rawText = result.text;
 
     // F. Safe JSON parsing — Gemini may occasionally return malformed responses
     let parsed: unknown;
     try {
-      parsed = JSON.parse(rawText);
+      parsed = JSON.parse(rawText ?? "{}");
     } catch {
-      console.error("Image Analysis: Gemini returned invalid JSON.", rawText.slice(0, 200));
+      console.error("Image Analysis: Gemini returned invalid JSON.", (rawText ?? "").slice(0, 200));
       return NextResponse.json(
         { error: "AI returned an invalid response. Please try again." },
         { status: 500 }

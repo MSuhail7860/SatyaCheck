@@ -151,7 +151,14 @@ export function VerificationEngine() {
       });
 
       if (!response.ok) {
-        throw new Error(`Request failed with status ${response.status}`);
+        let errorMessage = `Request failed with status ${response.status}`;
+        try {
+          const errorData = await response.json();
+          if (errorData.error) errorMessage = errorData.error;
+        } catch (e) {
+          // ignore parsing error
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
@@ -165,7 +172,7 @@ export function VerificationEngine() {
       }
     } catch (error) {
       console.error("Analysis failed:", error);
-      setError("Analysis failed. Please check your connection or API key.");
+      setError(error instanceof Error ? error.message : "Analysis failed. Please check your connection or API key.");
     } finally {
       setLoading(false);
     }

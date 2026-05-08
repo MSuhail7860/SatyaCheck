@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       client = getGeminiClient();
     } catch (e: unknown) {
       console.error((e as Error).message);
-      return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+      return NextResponse.json({ error: `Internal Server Error: ${(e as Error).message}` }, { status: 500 });
     }
 
     // Define the extended schema constraints.
